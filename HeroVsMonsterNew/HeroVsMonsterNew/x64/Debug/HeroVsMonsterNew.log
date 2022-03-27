@@ -1,0 +1,4 @@
+﻿  HeroVsMonsterNew.cpp
+C:\Users\Elliot Karlsson\Desktop\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(172,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(217,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  HeroVsMonsterNew.vcxproj -> C:\Users\Elliot Karlsson\Desktop\HeroVsMonsterNew\x64\Debug\HeroVsMonsterNew.exe
