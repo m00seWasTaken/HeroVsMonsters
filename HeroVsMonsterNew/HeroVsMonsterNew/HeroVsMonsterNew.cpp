@@ -16,13 +16,11 @@ bool				idleR = true;
 bool				idleL = false;
 bool				runR = false;
 bool				runL = false;
-//bool				jumping = false;
 // pic and window
 int					app_Wid = 960;
 int					app_Hei = 540;
 int					bg_Wid = 1920;
 int					bg_Hei = 1080;
-
 // Background --------------------------------------------------------------
 struct bg {
 	HDC hDCbg;
@@ -90,7 +88,6 @@ bool framerate(int timeStamp) {
 //---------------------------------------------------------------------------
 LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	int langd = bgs.size() - 1;
-	
 	switch (Msg) {
 	case WM_CREATE:
 		initalizeAll(hWnd);
@@ -199,9 +196,9 @@ void render() {
 			TransparentBlt(bufferHDC, app_Wid + bgs[n].x, 0, -bgs[n].x, app_Hei, bgs[n].hDCbg, 0, 0, -bgs[n].x * 2, bg_Hei, COLORREF(RGB(255, 0, 255)));
 		}
 		else if (bgs[n].x > 0) {
-			TransparentBlt(bufferHDC, 0, 0, bgs[n].x, app_Hei, bgs[n].hDCbg, bg_Wid - bgs[n].x, 0, bgs[n].x, bg_Hei, COLORREF(RGB(255, 0, 255)));
+			TransparentBlt(bufferHDC, bgs[n].x - app_Wid, 0, app_Wid, app_Hei, bgs[n].hDCbg, 0, 0, bg_Wid, bg_Hei, COLORREF(RGB(255, 0, 255)));
 		}
-		if (n == 1) {
+		if (n == 2) {
 			if (idleR == true) {
 				TransparentBlt(bufferHDC, app_Wid / 2 - 72, 275, 144, 144, playerHDC[0], xpic, ypic, 144, 144, COLORREF(RGB(255, 0, 255)));
 			}
@@ -211,6 +208,7 @@ void render() {
 		}
 	}
 	
+	//dubbelbuff
 	BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 
 	/*
@@ -232,12 +230,6 @@ void render() {
 		TransparentBlt(bufferHDC, 0, 0, x, app_Hei, bgs[1].hDCbg, bg_Wid - x, 0, x, bg_Hei, COLORREF(RGB(255, 0, 255)));
 	}
 	*/
-
-	// spelaren
-	//TransparentBlt(bufferHDC, bg_Wid / 2 - 86, 475, 172, 183, playerHDC, xpic, ypic, 172, 183, COLORREF(RGB(255, 0, 255)));
-
-	//dubbelbuff
-
 }
 //---------------------------------------------------------------------------
 int	initalizeAll(HWND hWnd) {

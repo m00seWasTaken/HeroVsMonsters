@@ -1,5 +1,5 @@
 ﻿  HeroVsMonsterNew.cpp
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(92,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(192,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(244,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(90,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(189,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(236,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   HeroVsMonsterNew.vcxproj -> C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\x64\Debug\HeroVsMonsterNew.exe
