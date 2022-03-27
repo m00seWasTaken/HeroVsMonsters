@@ -13,10 +13,10 @@ int					anistage = 0;
 // player animation
 int					xpic = 144, ypic = 0;
 bool				idleR = true;
-bool				idleL = true;
+bool				idleL = false;
 bool				runR = false;
 bool				runL = false;
-bool				jumping = false;
+//bool				jumping = false;
 // pic and window
 int					app_Wid = 960;
 int					app_Hei = 540;
@@ -27,18 +27,16 @@ int					bg_Hei = 1080;
 struct bg {
 	HDC hDCbg;
 	HBITMAP parallax;
-	int x;
-
-
-	// this is epioc
+	int x = 0;
+	int m = 7;
 };
 std::vector<bg> bgs;
 // Device Contexts ----------------------------------------------------------
 HDC			hDC;				// Vår huvudsakliga DC - Till fönstret
-HDC			playerHDC;			// DC till explosionen
+HDC			playerHDC[2];			// DC till explosionen
 HDC			bufferHDC;			// hdc till buffer
 // BITMAPS ------------------------------------------------------------------
-HBITMAP		player;				// player
+HBITMAP		player[2];				// player
 HBITMAP		oldBitmap[11];		// Lagrar orginalbilderna
 HBITMAP		bitmapbuff;
 // Funktioner ---------------------------------------------------------------
@@ -91,6 +89,8 @@ bool framerate(int timeStamp) {
 }
 //---------------------------------------------------------------------------
 LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+	int langd = bgs.size() - 1;
+	
 	switch (Msg) {
 	case WM_CREATE:
 		initalizeAll(hWnd);
@@ -103,25 +103,33 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 		break;
 	case WM_KEYDOWN:
 		if (wParam == VK_RIGHT) {
+			runL = false;
+			idleL = false;
 			runR = true;
-			idleR = false;
-			x -= 4;
-			if (x < -1920 / 2) {
-				x = 0;
-				//x += 5;
+			idleR = true;
+			for (int n = 0; n < langd; n++) {
+				bgs[n].x -= (1 * bgs[n].m);
+				if (bgs[n].x < -1920 / 2) {
+					bgs[n].x = 0;
+				}
 			}
 		}
 		if (wParam == VK_LEFT) {
-			x += 4;
-			if (x > 1920 / 2) {
-				x = 0;
+			runL = true;
+			idleL = true;
+			runR = false;
+			idleR = false;
+			for (int n = 0; n < langd; n++) {
+				bgs[n].x += (1 * bgs[n].m);
+				if (bgs[n].x > 1920 / 2) {
+					bgs[n].x = 0;
+				}
 			}
 		}
 		break;
 	case WM_KEYUP:
 		runR = false;
 		runL = false;
-		idleR = true;
 		break;
 	case WM_PAINT:
 		render();
@@ -139,32 +147,42 @@ void update() {
 	static int counter = 0;
 	counter++;
 
-	// update the player frames
-
-	// right
-
-	// left
-
-	// none do nothing
-
-	if (counter % 10 == 0) {
-		if (idleR == true) {
+	if (counter % 7 == 0) {
+		bgs[6].x -= 1;
+		if (bgs[6].x < -1920 / 2) {
+			bgs[6].x = 0;
+		}
+		// springer eller står till höger
+		if (runR == true) {
+			ypic = 288;
+			xpic -= 144;
+			if (xpic < 1) {
+				xpic = 720;
+			}
+		}
+		else if (idleR == true) {
 			ypic = 0;
 			xpic += 144;
 			if (xpic > 863) {
 				xpic = 144;
 			}
 		}
-		else if (runL == true) {
-
-		}
-		else if (runR == true) {
+		// springer eller står till vänster
+		if (runL == true) {
 			ypic = 288;
 			xpic += 144;
 			if (xpic > 863) {
 				xpic = 0;
 			}
 		}
+		else if (idleL == true) {
+			ypic = 0;
+			xpic -= 144;
+			if (xpic < 0) {
+				xpic = 576;
+			}
+		}
+
 	}
 }
 //---------------------------------------------------------------------------
@@ -173,19 +191,26 @@ void render() {
 
 	int langd = bgs.size() - 1;
 
-	for (int n = langd; n > -1; n--) {
+	for (int n = langd; n >= 0; n--) {
 
-		TransparentBlt(bufferHDC, 0, 0, app_Wid, app_Hei, bgs[n].hDCbg, 0, 0, bg_Wid, bg_Hei, COLORREF(RGB(255, 0, 255)));
+		TransparentBlt(bufferHDC, bgs[n].x, 0, app_Wid, app_Hei, bgs[n].hDCbg, 0, 0, bg_Wid, bg_Hei, COLORREF(RGB(255, 0, 255)));
 
-		if (x < 0) {
-			TransparentBlt(bufferHDC, app_Wid + x, 0, -x, app_Hei, bgs[n].hDCbg, 0, 0, -x * 2, bg_Hei, COLORREF(RGB(255, 0, 255)));
+		if (bgs[n].x < 0) {
+			TransparentBlt(bufferHDC, app_Wid + bgs[n].x, 0, -bgs[n].x, app_Hei, bgs[n].hDCbg, 0, 0, -bgs[n].x * 2, bg_Hei, COLORREF(RGB(255, 0, 255)));
 		}
-		else if (x > 0) {
-			TransparentBlt(bufferHDC, 0, 0, x, app_Hei, bgs[n].hDCbg, bg_Wid - x, 0, x * 2, bg_Hei, COLORREF(RGB(255, 0, 255)));
+		else if (bgs[n].x > 0) {
+			TransparentBlt(bufferHDC, 0, 0, bgs[n].x, app_Hei, bgs[n].hDCbg, bg_Wid - bgs[n].x, 0, bgs[n].x, bg_Hei, COLORREF(RGB(255, 0, 255)));
+		}
+		if (n == 1) {
+			if (idleR == true) {
+				TransparentBlt(bufferHDC, app_Wid / 2 - 72, 275, 144, 144, playerHDC[0], xpic, ypic, 144, 144, COLORREF(RGB(255, 0, 255)));
+			}
+			else if (idleL == true){
+				TransparentBlt(bufferHDC, app_Wid / 2 - 72, 275, 144, 144, playerHDC[1], xpic, ypic, 144, 144, COLORREF(RGB(255, 0, 255)));
+			}
 		}
 	}
-	TransparentBlt(bufferHDC, app_Wid / 2 - 72, 275, 144, 144, playerHDC, xpic, ypic, 144, 144, COLORREF(RGB(255, 0, 255)));
-
+	
 	BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 
 	/*
@@ -231,15 +256,19 @@ int	initalizeAll(HWND hWnd) {
 		tmp.hDCbg = CreateCompatibleDC(hDC);
 		text = "bilder/layer_0" + std::to_string(n + 1) + ".bmp";
 		tmp.parallax = (HBITMAP)LoadImage(NULL, (LPCTSTR)(text.c_str()), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		if(n > 1)tmp.m = 8 - n; 
 		bgs.push_back(tmp);
 		oldBitmap[n] = (HBITMAP)SelectObject(bgs[n].hDCbg, bgs[n].parallax);
 	}
 
 	// Läser in spelaren
-	playerHDC = CreateCompatibleDC(hDC);	// Skapa en hdc för spelaren
-	player = (HBITMAP)LoadImage(NULL, (LPCTSTR)("bilder/hero2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-	oldBitmap[8] = (HBITMAP)SelectObject(playerHDC, player);
-
+	playerHDC[0] = CreateCompatibleDC(hDC);	// Skapa en hdc för spelaren
+	playerHDC[1] = CreateCompatibleDC(hDC);	// Skapa en hdc för spelaren
+	player[0] = (HBITMAP)LoadImage(NULL, (LPCTSTR)("bilder/hero1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	player[1] = (HBITMAP)LoadImage(NULL, (LPCTSTR)("bilder/hero2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	oldBitmap[8] = (HBITMAP)SelectObject(playerHDC[0], player[0]);
+	oldBitmap[9] = (HBITMAP)SelectObject(playerHDC[1], player[1]);
+	
 	// Buffer
 	bufferHDC = CreateCompatibleDC(hDC);				// Skapa en hdc för bakgrundsbilden
 	bitmapbuff = CreateCompatibleBitmap(hDC, innerWidth, innerHeight);
@@ -252,19 +281,24 @@ int	initalizeAll(HWND hWnd) {
 //---------------------------------------------------------------------------
 void releaseAll(HWND hWnd) {
 
-	for (unsigned int n = 0; n < 8; n++) {
+	for (unsigned int n = 0; n < 10; n++) {
 		SelectObject(bgs[n].hDCbg, bgs[n].parallax);
 		DeleteObject(oldBitmap[n]);
 		ReleaseDC(hWnd, bgs[n].hDCbg);
 		DeleteDC(bgs[n].hDCbg);
 	}
-
-	SelectObject(playerHDC, oldBitmap[2]);
-	DeleteObject(player);
+	
+	SelectObject(playerHDC[0], oldBitmap[8]);
+	DeleteObject(player[0]);
+	SelectObject(playerHDC[1], oldBitmap[9]);
+	DeleteObject(player[1]);
 
 	//Ta bort hdc till fönstret och imageHDC
-	ReleaseDC(hWnd, playerHDC);
-	DeleteDC(playerHDC);
+	ReleaseDC(hWnd, playerHDC[0]);
+	DeleteDC(playerHDC[0]);
+	ReleaseDC(hWnd, playerHDC[1]);
+	DeleteDC(playerHDC[1]);
+	
 	ReleaseDC(hWnd, hDC);
 	DeleteDC(hDC);
 }
