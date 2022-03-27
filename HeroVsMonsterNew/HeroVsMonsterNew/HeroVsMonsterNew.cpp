@@ -29,6 +29,8 @@ struct bg {
 	HBITMAP parallax;
 	int x;
 
+
+	// this is epioc
 };
 std::vector<bg> bgs;
 // Device Contexts ----------------------------------------------------------
