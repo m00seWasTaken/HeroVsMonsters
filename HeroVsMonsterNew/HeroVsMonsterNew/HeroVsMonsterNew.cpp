@@ -8,7 +8,7 @@
 LPCTSTR				ClsName = "Bgstuff";
 double				CPUFreq = 0.0;
 bool				running = true, run = false;
-int					innerWidth, innerHeight, x = 0;
+int					innerWidth, innerHeight;
 int					anistage = 0;
 // player animation
 int					xpic = 144, ypic = 0;
@@ -21,6 +21,7 @@ int					app_Wid = 960;
 int					app_Hei = 540;
 int					bg_Wid = 1920;
 int					bg_Hei = 1080;
+int					x, y;
 // Background --------------------------------------------------------------
 struct bg {
 	HDC hDCbg;
@@ -88,6 +89,8 @@ bool framerate(int timeStamp) {
 //---------------------------------------------------------------------------
 LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	int langd = bgs.size() - 1;
+	std::string output;
+
 	switch (Msg) {
 	case WM_CREATE:
 		initalizeAll(hWnd);
@@ -97,6 +100,10 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		running = false;
+		break;
+	case WM_MOUSEMOVE:
+		x = LOWORD(wParam);
+		y = HIWORD(wParam);
 		break;
 	case WM_KEYDOWN:
 		if (wParam == VK_RIGHT) {
@@ -207,7 +214,8 @@ void render() {
 			}
 		}
 	}
-	
+	std::string output = std::to_string(x) + " " + std::to_string(y);
+	TextOut(bufferHDC, 0, 0, output.c_str(), output.length());
 	//dubbelbuff
 	BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 
