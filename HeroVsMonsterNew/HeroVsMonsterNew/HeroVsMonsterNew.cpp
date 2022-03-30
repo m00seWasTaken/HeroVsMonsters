@@ -239,7 +239,7 @@ void monsterKill() {
 //---------------------------------------------------------------------------
 void collision() {
 	for (int n = 0; n < monstLangd; n++) {		// går igenom alla monster
-		if (x > monst[n].x - monst[n].width / 2 && x < monst[n].x + monst[n].width / 2 && y < monst[n].y + monst[n].height / 2 && y > monst[n].y - monst[n].height / 2) {
+		if (x > monst[n].x - monst[n].width && x < monst[n].x && y < monst[n].y + monst[n].height / 2 && y > monst[n].y - monst[n].height / 2) {
 			monst.erase(monst.begin() + n);		// dödar den monstret som är på samma plats som musen när man klickar;
 			monstLangd = monst.size();
 			score(); 
