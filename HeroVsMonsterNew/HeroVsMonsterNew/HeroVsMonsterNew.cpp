@@ -6,6 +6,7 @@
 #include <time.h>
 // Globla variabler ---------------------------------------------------------
 LPCTSTR		ClsName = "Bgstuff";
+HWND		hWnd;
 double		CPUFreq = 0.0;
 bool		running = true, run = false;
 int			innerWidth, innerHeight;
@@ -25,6 +26,14 @@ bool		idleR = true;
 bool		idleL = false;
 bool		runR = false;
 bool		runL = false;
+// pennor och fonter
+HPEN		orginalPen;
+HPEN		myPens[10];
+HFONT		myFonts[10];
+// Menu
+bool		menuActive = false;
+bool		pause;
+int			a = 0;	
 // Background --------------------------------------------------------------
 struct bg {
 	HDC		hDCbg;
@@ -79,7 +88,10 @@ void		createMonster();		// skapar ett monster
 void		controllMonster();		// kontrollerar monster
 void		monsterKill();			// monster dödar spelaren
 void		makeExplosion(LPARAM);	// alla explosioner
-void		collision();
+void		collision();			// kollision för explosioner och monster
+void        printMenu(bool, int);	// skriver ut menyn
+void		choice(int);
+int         getActive(int, int&);	// hämtar activt menyval
 // Funktioner för windows ----------------------------------------------------
 LRESULT		CALLBACK	winProc(HWND, UINT, WPARAM, LPARAM);
 ATOM 		doRegister(HINSTANCE);
@@ -131,7 +143,7 @@ bool framerate(int timeStamp) {
 LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	int langd = bgs.size() - 1;
 	std::string output;
-
+	static int active = 0;
 
 	switch (Msg) {
 	case WM_CREATE:
@@ -141,18 +153,38 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 		makeExplosion(lParam);
 		collision();
 		break;
+	case WM_MOUSEMOVE:
+		break; 
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		running = false;
 		break;
 	case WM_KEYDOWN:
+		if (menuActive == true) {
+			if (wParam == VK_UP) {
+				active -= 1;
+				if (active < 0) {
+					active = 4;
+				}
+			}
+			else if (wParam == VK_DOWN) {
+				active += 1;
+				if (active > 4) {
+					active = 0;
+				}
+			}
+			else if (wParam == VK_RETURN) {
+				choice(active);
+			}
+			break;
+		}
 		if (rand() % 69 == 0) {
 			createMonster();
 		}
-		if (wParam == VK_RIGHT) {
+		else if (wParam == VK_RIGHT ) {
 			runRight(langd);
 		}
-		if (wParam == VK_LEFT) {
+		else if (wParam == VK_LEFT) {
 			runLeft(langd);
 		}
 		break;
@@ -170,6 +202,60 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 		return DefWindowProc(hWnd, Msg, wParam, lParam);
 	}
 	return 0;
+}
+//---------------------------------------------------------------------
+void choice(int active) {
+	if (active == 4) {
+		PostQuitMessage(0);
+	}
+}
+//---------------------------------------------------------------------
+void printMenu(bool pause, int a) {
+	RECT rect;
+	SelectObject(bufferHDC, myFonts[0]);
+	GetClientRect(hWnd, &rect);
+	PAINTSTRUCT ps;
+	std::string text[5] = { "Val 1", "Val 2", "Val 3", "Val 4", "Avsluta" };
+	std::string menu;
+
+	for (int n = 0; n < 5; n++) {
+		menu = text[n];
+		rect.top = 20 + (n * 30);
+		if (n == a) {
+			SetTextColor(bufferHDC, COLORREF(RGB(200, 45, 45)));
+		}
+		else {
+			SetTextColor(bufferHDC, COLORREF(RGB(0, 0, 0)));
+		}
+		DrawText(bufferHDC, menu.c_str(), -1, &rect, DT_SINGLELINE | DT_NOCLIP);
+	}
+	//BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
+}
+//---------------------------------------------------------------------
+int  getActive(int y, int& active) {
+	int a;
+	if (y < 50) {
+		a = 0;
+	}
+	else if (y < 80) {
+		a = 1;
+	}
+	else if (y < 110) {
+		a = 2;
+	}
+	else if (y < 135) {
+		a = 3;
+	}
+	else {
+		a = 4;
+	}
+	if (a != active) {
+		active = a;
+		InvalidateRect(hWnd, NULL, true);
+		UpdateWindow(hWnd);
+	}
+
+	return active;
 }
 //---------------------------------------------------------------------------
 void createMonster() { // skapar ett monster
@@ -287,43 +373,6 @@ void runRight(int langd) {
 	}
 }
 //---------------------------------------------------------------------------
-void update() {
-	static int counter = 0;
-	counter++;
-	//	int langd = exps.size() - 1;
-	if (counter % 7 == 0) {
-		// monster animation
-		for (int n = 0; n < monstLangd; n++) {
-			controllMonster();
-			monsterKill();
-		}
-		// background animation
-		bgs[6].x -= 1;
-		if (bgs[6].x < -1920 / 2) {
-			bgs[6].x = 0;
-		}
-		// player animation
-		// springer eller st�r till h�ger
-		playerAnimation();
-	}
-	// explosion animation
-	if (counter % 3 == 0) {
-		for (int n = 0; n < expLangd; n++) {
-			exps[n].cX += 320;
-			if (exps[n].cX > 1000) {
-				exps[n].cX = 0;
-				exps[n].cY += 240;
-			}
-			if (exps[n].cY > 1000) {
-				exps[n].cX = 0;
-				exps[n].cY = 0;
-				exps.erase(exps.begin());
-				expLangd = exps.size();
-			}
-		}
-	}
-}
-//---------------------------------------------------------------------------
 void playerAnimation() {
 	if (runR == true) {
 		ypic = 288;
@@ -362,11 +411,51 @@ void playerAnimation() {
 	}
 }
 //---------------------------------------------------------------------------
+void update() {
+	static int counter = 0;
+	counter++;
+	//	int langd = exps.size() - 1;
+	if (counter % 7 == 0) {
+		// monster animation
+		for (int n = 0; n < monstLangd; n++) {
+			controllMonster();
+			monsterKill();
+		}
+		// background animation
+		bgs[6].x -= 1;
+		if (bgs[6].x < -1920 / 2) {
+			bgs[6].x = 0;
+		}
+		// player animation
+		// springer eller st�r till h�ger
+		playerAnimation();
+	}
+	// explosion animation
+	if (counter % 3 == 0) {
+		for (int n = 0; n < expLangd; n++) {
+			exps[n].cX += 320;
+			if (exps[n].cX > 1000) {
+				exps[n].cX = 0;
+				exps[n].cY += 240;
+			}
+			if (exps[n].cY > 1000) {
+				exps[n].cX = 0;
+				exps[n].cY = 0;
+				exps.erase(exps.begin());
+				expLangd = exps.size();
+			}
+		}
+	}
+}
+//---------------------------------------------------------------------------
 void render() {
 	static bool yes = true;
-
 	int langd = bgs.size() - 1;
-
+	if (menuActive == true){	// om menyn är igång kör endast menyn
+		printMenu(pause, a);
+		BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
+		return;
+	}
 	for (int n = langd; n >= 0; n--) {
 		// background
 		TransparentBlt(bufferHDC, bgs[n].x, 0, app_Wid, app_Hei, bgs[n].hDCbg, 0, 0, bg_Wid, bg_Hei, COLORREF(RGB(255, 0, 255)));
@@ -377,7 +466,7 @@ void render() {
 		else if (bgs[n].x > 0) { // rörelse till vänster
 			TransparentBlt(bufferHDC, bgs[n].x - app_Wid, 0, app_Wid, app_Hei, bgs[n].hDCbg, 0, 0, bg_Wid, bg_Hei, COLORREF(RGB(255, 0, 255)));
 		}
-		if (n == 2) {
+		if (n == 1) {
 			// player
 			if (idleR == true) {
 				TransparentBlt(bufferHDC, playerX, playerY, 144, 144, playerHDC[0], xpic, ypic, 144, 144, COLORREF(RGB(255, 0, 255)));
@@ -410,7 +499,18 @@ int	initalizeAll(HWND hWnd) {
 	innerWidth = windowRect.right;
 	innerHeight = windowRect.bottom;
 
-	hDC = GetDC(hWnd);						// Koppla f�nstret till en DC
+	hDC = GetDC(hWnd);			// Koppla f�nstret till en DC
+
+	// skapar pennor och fonter
+	myPens[0] = CreatePen(PS_SOLID, 5, RGB(4, 118, 208));
+	myPens[1] = CreatePen(PS_SOLID, 4, RGB(255, 0, 0));
+	myPens[2] = CreatePen(PS_SOLID, 4, RGB(40, 230, 125));
+	orginalPen = (HPEN)SelectObject(hDC, myPens[0]);
+	myFonts[0] = CreateFontA(28, 0, 100, 0, FW_DONTCARE, FALSE, TRUE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+		CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Impact"));
+
+
+	// kopplar resten av HDC
 	bg tmp;
 	std::string text;
 	for (unsigned int n = 0; n < 8; n++) {	// l�ser in HDC och bilder till bgs
@@ -451,6 +551,7 @@ int	initalizeAll(HWND hWnd) {
 void releaseAll(HWND hWnd) {
 
 	for (unsigned int n = 0; n < 10; n++) {
+		// tar bort dc och bitmap för backgrunden
 		SelectObject(bgs[n].hDCbg, bgs[n].parallax);
 		DeleteObject(oldBitmap[n]);
 		ReleaseDC(hWnd, bgs[n].hDCbg);
@@ -463,11 +564,18 @@ void releaseAll(HWND hWnd) {
 		ReleaseDC(hWnd, playerHDC[n]);
 		DeleteDC(playerHDC[n]);
 	}
+	// tar bort pennor 
+	SelectObject(hDC, orginalPen);
+	for (int i = 0; i < 10; i++) {
+		DeleteObject(myPens[i]);
+	}
+	// tar bort dc och bitmap för explosioner
 	SelectObject(expHDC, oldBitmap[10]);
 	DeleteObject(explosion);
 	ReleaseDC(hWnd, expHDC);
 	DeleteDC(expHDC);
 
+	// tar bort dc och bitmap för monster
 	SelectObject(monsterHDC, oldBitmap[11]);
 	DeleteObject(monsters);
 	ReleaseDC(hWnd, monsterHDC);
@@ -495,7 +603,7 @@ BOOL initInstance(HINSTANCE hInstance, int nCmdShow) {
 	UpdateWindow(hWnd);
 	return TRUE;
 }
-//-----------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 ATOM doRegister(HINSTANCE hi) {
 	WNDCLASSEX wincl;
 
@@ -520,4 +628,4 @@ double getFreq() {
 	QueryPerformanceFrequency(&li);
 	return double(li.QuadPart) / 1000.0;
 }
-//-------------------------------------------
+//---------------------------------------------------------------------------
