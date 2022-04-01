@@ -31,8 +31,8 @@ HPEN		orginalPen;
 HPEN		myPens[10];
 HFONT		myFonts[10];
 // Menu
-bool		menuActive = false;
-bool		pause;
+bool		menuActive = true;
+bool		pause = false;
 int			a = 0;	
 // Background --------------------------------------------------------------
 struct bg {
@@ -90,8 +90,8 @@ void		monsterKill();			// monster dödar spelaren
 void		makeExplosion(LPARAM);	// alla explosioner
 void		collision();			// kollision för explosioner och monster
 void        printMenu(bool, int);	// skriver ut menyn
-void		choice(int);
-int         getActive(int, int&);	// hämtar activt menyval
+void		choice(int);			// vad för aval man väljer i menyn
+int         getActive(int, int&);	// hämtar aktivt menyval
 // Funktioner för windows ----------------------------------------------------
 LRESULT		CALLBACK	winProc(HWND, UINT, WPARAM, LPARAM);
 ATOM 		doRegister(HINSTANCE);
@@ -144,6 +144,8 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	int langd = bgs.size() - 1;
 	std::string output;
 	static int active = 0;
+	PAINTSTRUCT ps;
+
 
 	switch (Msg) {
 	case WM_CREATE:
@@ -166,6 +168,7 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 				if (active < 0) {
 					active = 4;
 				}
+				menuActive = false;
 			}
 			else if (wParam == VK_DOWN) {
 				active += 1;
@@ -183,17 +186,22 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 		}
 		else if (wParam == VK_RIGHT ) {
 			runRight(langd);
+			menuActive = true;
 		}
 		else if (wParam == VK_LEFT) {
 			runLeft(langd);
 		}
 		break;
 	case WM_KEYUP:
-		runR = false;
-		runL = false;
+		if (wParam == VK_LEFT || wParam == VK_RIGHT) {
+			runR = false;
+			runL = false;
+		}
 		break;
 	case WM_PAINT:
+		BeginPaint(hWnd, &ps);
 		render();
+		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
 		releaseAll(hWnd);
@@ -214,11 +222,17 @@ void printMenu(bool pause, int a) {
 	RECT rect;
 	SelectObject(bufferHDC, myFonts[0]);
 	GetClientRect(hWnd, &rect);
-	PAINTSTRUCT ps;
-	std::string text[5] = { "Val 1", "Val 2", "Val 3", "Val 4", "Avsluta" };
+	
+	int antal = 3;
+	std::string text[3] = { "NEW GAME", "INSTRUCTIONS", "EXIT" };
+	/*
+	if (pause == true) {
+		std::string text[4] = { "RESUME", "NEW GAME", "INSTRUCTIONS", "EXIT" };;
+		antal = 4;
+	}
+	*/
 	std::string menu;
-
-	for (int n = 0; n < 5; n++) {
+	for (int n = 0; n < antal; n++) {
 		menu = text[n];
 		rect.top = 20 + (n * 30);
 		if (n == a) {
@@ -229,7 +243,7 @@ void printMenu(bool pause, int a) {
 		}
 		DrawText(bufferHDC, menu.c_str(), -1, &rect, DT_SINGLELINE | DT_NOCLIP);
 	}
-	//BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
+	BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 }
 //---------------------------------------------------------------------
 int  getActive(int y, int& active) {
@@ -493,6 +507,8 @@ void render() {
 //---------------------------------------------------------------------------
 int	initalizeAll(HWND hWnd) {
 	srand(time(NULL));
+
+
 	// H�mta f�nstrets riktiga bredd & h�jd
 	RECT		windowRect;
 	GetClientRect(hWnd, &windowRect);

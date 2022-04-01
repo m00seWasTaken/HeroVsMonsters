@@ -1,13 +1,12 @@
 ﻿  HeroVsMonsterNew.cpp
 C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(115,28): warning C4566: character represented by universal-character-name '\uFFFD' cannot be represented in the current code page (1252)
 C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(144,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(217,14): warning C4101: 'ps': unreferenced local variable
-C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(273,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(321,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(330,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(347,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(445,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(453,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(489,58): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(495,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(288,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(336,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(345,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(362,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(460,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(468,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(504,58): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(510,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   HeroVsMonsterNew.vcxproj -> C:\Users\zellkar.JGY\Desktop\gitkraken\HeroVsMonsters\HeroVsMonsterNew\x64\Debug\HeroVsMonsterNew.exe
