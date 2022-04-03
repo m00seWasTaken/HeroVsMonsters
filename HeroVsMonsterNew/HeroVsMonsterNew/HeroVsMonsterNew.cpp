@@ -91,7 +91,7 @@ void		makeExplosion(LPARAM);	// alla explosioner
 void		collision();			// kollision för explosioner och monster
 void        printMenu(bool, int);	// skriver ut menyn
 void		choice(int);			// vad för aval man väljer i menyn
-int         getActive(int, int&);	// hämtar aktivt menyval
+void         getActive(int&);	// hämtar aktivt menyval
 // Funktioner för windows ----------------------------------------------------
 LRESULT		CALLBACK	winProc(HWND, UINT, WPARAM, LPARAM);
 ATOM 		doRegister(HINSTANCE);
@@ -152,10 +152,18 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 		initalizeAll(hWnd);
 		break;
 	case WM_LBUTTONDOWN:
+		if (menuActive == true) {
+			choice(a);
+			break;
+		}
 		makeExplosion(lParam);
 		collision();
 		break;
 	case WM_MOUSEMOVE:
+		if (menuActive == true) {
+			y = HIWORD(lParam);
+			getActive(a);
+		}
 		break; 
 	case WM_CLOSE:
 		PostQuitMessage(0);
@@ -186,10 +194,13 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 		}
 		else if (wParam == VK_RIGHT ) {
 			runRight(langd);
-			menuActive = true;
 		}
 		else if (wParam == VK_LEFT) {
 			runLeft(langd);
+		}
+		else if (wParam == VK_ESCAPE) {
+			menuActive = true;
+			pause = true;
 		}
 		break;
 	case WM_KEYUP:
@@ -213,9 +224,31 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 }
 //---------------------------------------------------------------------
 void choice(int active) {
-	if (active == 4) {
+	std::string output = "no worky";
+	int ymenu = 50;
+	if (active == 0) {
+		output = "lol";
+		ymenu = 70;
+	}
+	else if (active == 1) {
+		output = "lolyeha";
+		ymenu = 90;
+	}
+	else if (active == 2) {
+		output = "3";
+		ymenu = 110;
+	}
+	else if (active == 3) {
+		output = "DETTA FUNKAR JU";
+		ymenu = 250;
+	}
+	else if (active == 4) {
+		output = "die";
+		ymenu = 280;
 		PostQuitMessage(0);
 	}
+	
+	TextOut(bufferHDC, 0, ymenu, output.c_str(), output.length());
 }
 //---------------------------------------------------------------------
 void printMenu(bool pause, int a) {
@@ -246,30 +279,28 @@ void printMenu(bool pause, int a) {
 	BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 }
 //---------------------------------------------------------------------
-int  getActive(int y, int& active) {
-	int a;
+void getActive(int& a) {
+	int active;
 	if (y < 50) {
-		a = 0;
+		active = 0;
 	}
 	else if (y < 80) {
-		a = 1;
+		active = 1;
 	}
 	else if (y < 110) {
-		a = 2;
+		active = 2;
 	}
 	else if (y < 135) {
-		a = 3;
+		active = 3;
 	}
 	else {
-		a = 4;
+		active = 4;
 	}
-	if (a != active) {
-		active = a;
+	if (active != a) {
+		a = active;
 		InvalidateRect(hWnd, NULL, true);
 		UpdateWindow(hWnd);
 	}
-
-	return active;
 }
 //---------------------------------------------------------------------------
 void createMonster() { // skapar ett monster
@@ -467,6 +498,8 @@ void render() {
 	int langd = bgs.size() - 1;
 	if (menuActive == true){	// om menyn är igång kör endast menyn
 		printMenu(pause, a);
+		std::string output = "Y: " + std::to_string(y) + " " + "a: " + std::to_string(a);
+		TextOut(bufferHDC, 0, 20, output.c_str(), output.length());
 		BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 		return;
 	}
@@ -499,15 +532,14 @@ void render() {
 		}
 	}
 
-	std::string output = std::to_string(monst.size()) + " " + std::to_string(dead) + " " + std::to_string(points);
-	TextOut(bufferHDC, 0, 0, output.c_str(), output.length());
+	std::string output = "Score: " + std::to_string(points) + " ";
+	TextOut(bufferHDC, 0, 20, output.c_str(), output.length());
 	//dubbelbuff
 	BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 }
 //---------------------------------------------------------------------------
 int	initalizeAll(HWND hWnd) {
 	srand(time(NULL));
-
 
 	// H�mta f�nstrets riktiga bredd & h�jd
 	RECT		windowRect;
