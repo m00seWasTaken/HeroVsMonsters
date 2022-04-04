@@ -89,9 +89,13 @@ void		controllMonster();		// kontrollerar monster
 void		monsterKill();			// monster dödar spelaren
 void		makeExplosion(LPARAM);	// alla explosioner
 void		collision();			// kollision för explosioner och monster
+// menu
+void        newGame();				// skapar spel från menyn
+//void		instructions();
+void		exitGame();
 void        printMenu(bool, int);	// skriver ut menyn
-void		choice(int);			// vad för aval man väljer i menyn
-void         getActive(int&);	// hämtar aktivt menyval
+void		choice(int, bool);			// vad för aval man väljer i menyn
+void        getActive(int&);		// hämtar aktivt menyval
 // Funktioner för windows ----------------------------------------------------
 LRESULT		CALLBACK	winProc(HWND, UINT, WPARAM, LPARAM);
 ATOM 		doRegister(HINSTANCE);
@@ -125,7 +129,7 @@ int WINAPI WinMain(_In_ HINSTANCE hi, _In_opt_ HINSTANCE hp, _In_ LPSTR lp, _In_
 		}
 		if (framerate(20) == true) {
 			render();
-			update();
+			if(menuActive == false)update();
 		}
 	}
 	return 0;
@@ -153,7 +157,7 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 		break;
 	case WM_LBUTTONDOWN:
 		if (menuActive == true) {
-			choice(a);
+			choice(a, pause);
 			break;
 		}
 		makeExplosion(lParam);
@@ -176,7 +180,6 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 				if (active < 0) {
 					active = 4;
 				}
-				menuActive = false;
 			}
 			else if (wParam == VK_DOWN) {
 				active += 1;
@@ -185,7 +188,7 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 				}
 			}
 			else if (wParam == VK_RETURN) {
-				choice(active);
+				choice(active, pause);
 			}
 			break;
 		}
@@ -223,79 +226,93 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 //---------------------------------------------------------------------
-void choice(int active) {
+void choice(int active, bool pause) {
 	std::string output = "no worky";
-	int ymenu = 50;
-	if (active == 0) {
-		output = "lol";
-		ymenu = 70;
+	int ymenu = 300, xmenu = 100;
+	if (pause == true) {
+		if (active == 0) {
+			//resume();
+			output = "0  w Pause";
+			menuActive = false;
+		}
+		else if (active == 1) {
+			newGame();
+			output = "1  w Pause";
+			menuActive = false;
+		}
+		else if (active == 2) {
+			//instructions();
+			output = "2  w Pause";
+		}
+		else if (active == 3) {
+			exitGame();
+			output = "haha lol you tryna escape in pause";
+			PostQuitMessage(0);
+		}
 	}
-	else if (active == 1) {
-		output = "lolyeha";
-		ymenu = 90;
+	else {
+		if (active == 0) {
+			newGame();
+			output = "0";
+			menuActive = false;
+		}
+		else if (active == 1) {
+			//instructions();
+			output = "1";
+		}
+		else if (active == 2) {
+			exitGame();
+			output = "haha lol you tryna escape";
+		}
 	}
-	else if (active == 2) {
-		output = "3";
-		ymenu = 110;
-	}
-	else if (active == 3) {
-		output = "DETTA FUNKAR JU";
-		ymenu = 250;
-	}
-	else if (active == 4) {
-		output = "die";
-		ymenu = 280;
-		PostQuitMessage(0);
-	}
-	
-	TextOut(bufferHDC, 0, ymenu, output.c_str(), output.length());
+
+	TextOut(bufferHDC, xmenu, ymenu, output.c_str(), output.length());
 }
 //---------------------------------------------------------------------
-void printMenu(bool pause, int a) {
-	RECT rect;
-	SelectObject(bufferHDC, myFonts[0]);
-	GetClientRect(hWnd, &rect);
-	
-	int antal = 3;
-	std::string text[3] = { "NEW GAME", "INSTRUCTIONS", "EXIT" };
-	/*
-	if (pause == true) {
-		std::string text[4] = { "RESUME", "NEW GAME", "INSTRUCTIONS", "EXIT" };;
-		antal = 4;
+void newGame() {
+	for (int n = 0; n < bgs.size(); n++) {
+		bgs[n].x = 0;
 	}
-	*/
-	std::string menu;
-	for (int n = 0; n < antal; n++) {
-		menu = text[n];
-		rect.top = 20 + (n * 30);
-		if (n == a) {
-			SetTextColor(bufferHDC, COLORREF(RGB(200, 45, 45)));
-		}
-		else {
-			SetTextColor(bufferHDC, COLORREF(RGB(0, 0, 0)));
-		}
-		DrawText(bufferHDC, menu.c_str(), -1, &rect, DT_SINGLELINE | DT_NOCLIP);
-	}
-	BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
+	points = 0;			// resets values
+	monst.clear();
+	exps.clear();
+	monstLangd = 0;
+	expLangd = 0;
+}
+//---------------------------------------------------------------------
+void exitGame() {
+	PostQuitMessage(0);
+	quick_exit;
 }
 //---------------------------------------------------------------------
 void getActive(int& a) {
 	int active;
-	if (y < 50) {
-		active = 0;
-	}
-	else if (y < 80) {
-		active = 1;
-	}
-	else if (y < 110) {
-		active = 2;
-	}
-	else if (y < 135) {
-		active = 3;
+	if (pause == true) {
+		if (y < 80) {
+			active = 0;
+		}
+		else if (y < 130) {
+			active = 1;
+		}
+		else if (y < 160) {
+			active = 2;
+		}
+		else {
+			active = 3;
+		}
 	}
 	else {
-		active = 4;
+		if (y < 80) {
+			active = 0;
+		}
+		else if (y < 130) {
+			active = 1;
+		}
+		else {
+			active = 2;
+		}
 	}
+
 	if (active != a) {
 		a = active;
 		InvalidateRect(hWnd, NULL, true);
@@ -319,6 +336,9 @@ void createMonster() { // skapar ett monster
 }	
 //---------------------------------------------------------------------------
 void controllMonster() {
+	if (menuActive == true) {
+		return; 
+	}
 	for (int n = 0; n < monstLangd; n++) {
 		if (monst[n].x - playerX < 0) {
 			// gå till höger
@@ -362,8 +382,11 @@ void monsterKill() {
 	for (int n = 0; n < monstLangd; n++) {
 		if (monst[n].x > playerX && monst[n].x < playerX + 72) {
 			dead = true;
-			monst.clear();
-			monstLangd = monst.size();
+			//newGame();
+			menuActive = true;
+			pause = false; 
+			//monst.clear();
+			//monstLangd = monst.size();
 		}
 	}
 }
@@ -493,13 +516,48 @@ void update() {
 	}
 }
 //---------------------------------------------------------------------------
+void printMenu(bool pause, int a) {
+	RECT rect;
+	SelectObject(bufferHDC, myFonts[0]);
+	GetClientRect(hWnd, &rect);
+	int antal; 
+	std::string pauseText[4] = { "RESUME", "NEW GAME", "INSTRUCTIONS", "EXIT" };
+	std::string text[3] = { "NEW GAME", "INSTRUCTIONS", "EXIT" };
+	std::string menu;
+	if (pause == true) {
+		antal = 4;
+	}
+	else {
+		antal = 3;
+	}
+	for (int n = 0; n < antal; n++) {
+		if (pause == true) {
+			menu = pauseText[n];
+		}
+		else {
+			menu = text[n];
+		}
+		
+		rect.top = 50 + (n * 40);
+		if (n == a) {
+			SetTextColor(bufferHDC, COLORREF(RGB(200, 45, 45)));
+		}
+		else {
+			SetTextColor(bufferHDC, COLORREF(RGB(0, 0, 0)));
+		}
+
+		TextOut(bufferHDC, 50, rect.top, menu.c_str(), menu.size());
+	}
+}
+//---------------------------------------------------------------------
 void render() {
 	static bool yes = true;
 	int langd = bgs.size() - 1;
 	if (menuActive == true){	// om menyn är igång kör endast menyn
 		printMenu(pause, a);
-		std::string output = "Y: " + std::to_string(y) + " " + "a: " + std::to_string(a);
-		TextOut(bufferHDC, 0, 20, output.c_str(), output.length());
+		//std::string output = "Y: " + std::to_string(y) + " " + "a: " + std::to_string(a);
+		//if (pause == true) output += " and Pause ";
+		//TextOut(bufferHDC, 0, 20, output.c_str(), output.length());
 		BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 		return;
 	}
@@ -533,6 +591,7 @@ void render() {
 	}
 
 	std::string output = "Score: " + std::to_string(points) + " ";
+
 	TextOut(bufferHDC, 0, 20, output.c_str(), output.length());
 	//dubbelbuff
 	BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);

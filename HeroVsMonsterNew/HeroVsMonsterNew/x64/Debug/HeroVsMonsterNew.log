@@ -1,14 +1,14 @@
 ﻿  HeroVsMonsterNew.cpp
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(115,28): warning C4566: character represented by universal-character-name '\uFFFD' cannot be represented in the current code page (1252)
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(144,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(251,62): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(318,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(366,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(375,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(392,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(490,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(498,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(502,60): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(536,59): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(542,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(119,28): warning C4566: character represented by universal-character-name '\uFFFD' cannot be represented in the current code page (1252)
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(148,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(269,66): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(285,2): warning C4551: function call missing argument list
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(335,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(398,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(415,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(513,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(549,61): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(555,28): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(595,59): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\HeroVsMonsterNew\HeroVsMonsterNew.cpp(601,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   HeroVsMonsterNew.vcxproj -> C:\Users\Elliot Karlsson\Desktop\Gitkraken Repos\HeroVsMonsters\HeroVsMonsterNew\x64\Debug\HeroVsMonsterNew.exe
