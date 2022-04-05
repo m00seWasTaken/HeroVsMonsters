@@ -8,9 +8,8 @@
 LPCTSTR		ClsName = "Bgstuff";
 HWND		hWnd;
 double		CPUFreq = 0.0;
-bool		running = true, run = false;
+bool		running = true;
 int			innerWidth, innerHeight;
-int			anistage = 0;
 // pic and window
 int			app_Wid = 960;
 int			app_Hei = 540;
@@ -20,16 +19,13 @@ int			x, y;
 // player animation
 int			xpic = 144, ypic = 0;
 int			playerX = app_Wid/2 - 72, playerY = 275;
-bool		dead = false;
 int			points;
 bool		idleR = true;
 bool		idleL = false;
 bool		runR = false;
 bool		runL = false;
-// pennor och fonter
-HPEN		orginalPen;
-HPEN		myPens[10];
-HFONT		myFonts[10];
+// fonter
+HFONT		myFonts[2];
 // Menu
 bool		menuActive = true;
 bool		pause = false;
@@ -63,39 +59,42 @@ struct enemie {
 	int		cY = 0;
 	bool	runR = false;
 	bool	runL = false;
-	int		id = 0;
 };
 int monstLangd;
 std::vector<enemie> monst;
 // Device Contexts ----------------------------------------------------------
-HDC			hDC;				// V�r huvudsakliga DC - Till f�nstret
-HDC			playerHDC[2];		// DC till explosionen
-HDC			expHDC;
-HDC			monsterHDC;			// monsterHDC
-HDC			bufferHDC;			// hdc till buffer
+HDC			hDC;					// V�r huvudsakliga DC - Till f�nstret
+HDC			playerHDC[2];			// DC till player
+HDC			expHDC;					// DC till explosionen
+HDC			monsterHDC;				// DC till monster
+HDC			bufferHDC;				// hdc till buffer
 // BITMAPS ------------------------------------------------------------------
-HBITMAP		player[2];			// player
-HBITMAP		explosion;			// explosion
-HBITMAP		monsters;			// monsters
-HBITMAP		oldBitmap[12];		// Lagrar orginalbilderna
-HBITMAP		bitmapbuff;
+HBITMAP		player[2];				// player
+HBITMAP		explosion;				// explosion
+HBITMAP		monsters;				// monsters
+HBITMAP		oldBitmap[12];			// Lagrar orginalbilderna
+HBITMAP		bitmapbuff;				// lagrar bilden till bitmapen
 // Funktioner ---------------------------------------------------------------
+//player controll
 void		runRight(int);			// spelaren springer höger
 void		runLeft(int);			// spelaren springer vänster
 void		playerAnimation();		// animation för spelaren
+//monsters 
 void		score();				// splearens poäng
 void		createMonster();		// skapar ett monster
-void		controllMonster();		// kontrollerar monster
-void		monsterKill();			// monster dödar spelaren
-void		makeExplosion(LPARAM);	// alla explosioner
+void		controllMonster(int);	// kontrollerar monster
+void		monsterAnimation(int);	// animation för monster
+void		monsterKill(int);		// monster dödar spelaren
+//Explosion
 void		collision();			// kollision för explosioner och monster
+void		makeExplosion(LPARAM);	// alla explosioner
 // menu
-void        newGame();				// skapar spel från menyn
-//void		instructions();
-void		exitGame();
-void        printMenu(bool, int);	// skriver ut menyn
-void		choice(int, bool);			// vad för aval man väljer i menyn
-void        getActive(int&);		// hämtar aktivt menyval
+void        newGame();				// startar spel från menyn
+void		instructions();			// instruktioner för spelet
+void		exitGame();				// avsluta spelet 
+void        printMenu();			// skriver ut menyn
+void		choice();				// vad för aval man väljer i menyn
+void        getActive();			// hämtar aktivt menyval
 // Funktioner för windows ----------------------------------------------------
 LRESULT		CALLBACK	winProc(HWND, UINT, WPARAM, LPARAM);
 ATOM 		doRegister(HINSTANCE);
@@ -129,7 +128,7 @@ int WINAPI WinMain(_In_ HINSTANCE hi, _In_opt_ HINSTANCE hp, _In_ LPSTR lp, _In_
 		}
 		if (framerate(20) == true) {
 			render();
-			if(menuActive == false)update();
+			if(menuActive == false)update();	// om menyn är igång upptatera inga animationer
 		}
 	}
 	return 0;
@@ -146,27 +145,22 @@ bool framerate(int timeStamp) {
 //---------------------------------------------------------------------------
 LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	int langd = bgs.size() - 1;
-	std::string output;
-	static int active = 0;
-	PAINTSTRUCT ps;
-
-
 	switch (Msg) {
 	case WM_CREATE:
 		initalizeAll(hWnd);
 		break;
 	case WM_LBUTTONDOWN:
-		if (menuActive == true) {
-			choice(a, pause);
+		if (menuActive == true) {			// om man är i menyn kör aktivt val
+			choice();
 			break;
 		}
-		makeExplosion(lParam);
+		makeExplosion(lParam);				// i spelet skapa en explosion och titta dens collision
 		collision();
 		break;
 	case WM_MOUSEMOVE:
-		if (menuActive == true) {
+		if (menuActive == true) {			// om man är i menyn tracka musen
 			y = HIWORD(lParam);
-			getActive(a);
+			getActive();
 		}
 		break; 
 	case WM_CLOSE:
@@ -174,48 +168,25 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 		running = false;
 		break;
 	case WM_KEYDOWN:
-		if (menuActive == true) {
-			if (wParam == VK_UP) {
-				active -= 1;
-				if (active < 0) {
-					active = 4;
-				}
-			}
-			else if (wParam == VK_DOWN) {
-				active += 1;
-				if (active > 4) {
-					active = 0;
-				}
-			}
-			else if (wParam == VK_RETURN) {
-				choice(active, pause);
-			}
-			break;
-		}
 		if (rand() % 69 == 0) {
-			createMonster();
+			createMonster();				// när man går åt ett håll finns det 1/69 chans att det spawnar ett monster
 		}
-		else if (wParam == VK_RIGHT ) {
+		else if (wParam == VK_RIGHT ) {		// rör bakgrunden till vänster
 			runRight(langd);
 		}
-		else if (wParam == VK_LEFT) {
+		else if (wParam == VK_LEFT) {		// rör bakgrunden till höger
 			runLeft(langd);
 		}
-		else if (wParam == VK_ESCAPE) {
+		else if (wParam == VK_ESCAPE) {		// öppnar menyn när man trycker på ESC
 			menuActive = true;
 			pause = true;
 		}
 		break;
-	case WM_KEYUP:
+	case WM_KEYUP:							// om man släpper en piltangent så slutar spelaren att springa och idle animation körs istället
 		if (wParam == VK_LEFT || wParam == VK_RIGHT) {
 			runR = false;
 			runL = false;
 		}
-		break;
-	case WM_PAINT:
-		BeginPaint(hWnd, &ps);
-		render();
-		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
 		releaseAll(hWnd);
@@ -226,47 +197,35 @@ LRESULT CALLBACK winProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 //---------------------------------------------------------------------
-void choice(int active, bool pause) {
-	std::string output = "no worky";
+void choice() {							// vilket menyval man väljer
 	int ymenu = 300, xmenu = 100;
-	if (pause == true) {
-		if (active == 0) {
-			//resume();
-			output = "0  w Pause";
-			menuActive = false;
+	if (pause == true) {				// meny för paus
+		if (a == 0) {
+			menuActive = false;			// resume
 		}
-		else if (active == 1) {
+		else if (a == 1) {				// new game
 			newGame();
-			output = "1  w Pause";
 			menuActive = false;
 		}
-		else if (active == 2) {
-			//instructions();
-			output = "2  w Pause";
+		else if (a == 2) {				// instuctions
+			instructions();
 		}
-		else if (active == 3) {
+		else if (a == 3) {				// exit
 			exitGame();
-			output = "haha lol you tryna escape in pause";
-			PostQuitMessage(0);
 		}
 	}
-	else {
-		if (active == 0) {
+	else {								// meny när man startar spelet
+		if (a == 0) {					// new game
 			newGame();
-			output = "0";
 			menuActive = false;
+		}	
+		else if (a == 1) {				// instructions
+			instructions();			
 		}
-		else if (active == 1) {
-			//instructions();
-			output = "1";
-		}
-		else if (active == 2) {
+		else if (a == 2) {				// exit
 			exitGame();
-			output = "haha lol you tryna escape";
 		}
 	}
-
-	TextOut(bufferHDC, xmenu, ymenu, output.c_str(), output.length());
 }
 //---------------------------------------------------------------------
 void newGame() {
@@ -280,32 +239,43 @@ void newGame() {
 	expLangd = 0;
 }
 //---------------------------------------------------------------------
-void exitGame() {
-	PostQuitMessage(0);
-	quick_exit;
+void instructions() {		// skriver ut instruktionerna till spelaren
+	std::string text[5] = {"Walk left and Right using the Arrow Keys","Monsters are bad. Kill them by clicking on them and making cool explosions","Dont get touched by bad monsters.It hurts", "Get points by how many monsters you kill.", "good luck!" };
+	int langd = 5;
+	int instX = 220, instY = 0;
+
+	for (int n = 0; n < langd; n++) {
+		instY = 40 * (n + 1) + 120;
+		TextOut(bufferHDC, instX, instY, text[n].c_str(), text[n].size());
+	}
 }
 //---------------------------------------------------------------------
-void getActive(int& a) {
+void exitGame() {				// stänger ner spelet 
+	running = false;
+	PostQuitMessage(0);
+}
+//---------------------------------------------------------------------
+void getActive() {				// hämtar aktivt val beroende på vart musen är
 	int active;
-	if (pause == true) {
-		if (y < 80) {
+	if (pause == true) {		// om man har pausat 
+		if (y < 180) {
 			active = 0;
 		}
-		else if (y < 130) {
+		else if (y < 230) {
 			active = 1;
 		}
-		else if (y < 160) {
+		else if (y < 260) {
 			active = 2;
 		}
 		else {
 			active = 3;
 		}
 	}
-	else {
-		if (y < 80) {
+	else {						// I originalmenyn
+		if (y < 180) {
 			active = 0;
 		}
-		else if (y < 130) {
+		else if (y < 230) {
 			active = 1;
 		}
 		else {
@@ -313,10 +283,8 @@ void getActive(int& a) {
 		}
 	}
 
-	if (active != a) {
+	if (active != a) {			// om man faktiskt har bytt val då ändras valet
 		a = active;
-		InvalidateRect(hWnd, NULL, true);
-		UpdateWindow(hWnd);
 	}
 }
 //---------------------------------------------------------------------------
@@ -329,66 +297,66 @@ void createMonster() { // skapar ett monster
 	while (x < app_Wid / 2 + 200 && x > app_Wid / 2 - 200) {
 		x = (rand() % app_Wid) - (tmp.width / 2);
 	}
+	// lägger in honom i sin vector
 	tmp.x = x;
 	tmp.y = y;
 	monst.push_back(tmp);
 	monstLangd = monst.size();
 }	
 //---------------------------------------------------------------------------
-void controllMonster() {
+void controllMonster(int n) {		// kontrollerar monster
 	if (menuActive == true) {
 		return; 
 	}
-	for (int n = 0; n < monstLangd; n++) {
-		if (monst[n].x - playerX < 0) {
-			// gå till höger
-			monst[n].runR = true;
-			monst[n].runL = false;
-			monst[n].x++;
-		}
-		else {
-			// gå till vänster
-			monst[n].runR = false;
-			monst[n].runL = true;
-			monst[n].x--;
-		}
-		if (monst[n].y - playerY > 0) {
-			// gå neråt
-			monst[n].y--;
-		}
-		else {
-			// gå uppåt
-			monst[n].y++;
-		}
-		if (monst[n].runL == true) {
-			monst[n].cY = 0;
-			monst[n].cX += 24;
-			if (monst[n].cX > 263) {
-				monst[n].cX = 0;
-			}
-		}
-		else if (monst[n].runR == true) {
-			monst[n].cY = 24;
-			monst[n].cX += 24;
-			if (monst[n].cX > 263) {
-				monst[n].cX = 0;
-			}
-		}
+
+	if (monst[n].x - playerX < 0) {
+		// gå till höger
+		monst[n].runR = true;
+		monst[n].runL = false;
+		monst[n].x += 5;
+	}
+	else {
+		// gå till vänster
+		monst[n].runR = false;
+		monst[n].runL = true;
+		monst[n].x -= 5;
+	}
+	if (monst[n].y - playerY > 0) {
+		// gå neråt
+		monst[n].y -= 5;
+	}
+	else {
+		// gå uppåt
+		monst[n].y += 5;
 	}
 
-}	// kontrollerar monster
+}	
 //---------------------------------------------------------------------------
-void monsterKill() {
-	for (int n = 0; n < monstLangd; n++) {
-		if (monst[n].x > playerX && monst[n].x < playerX + 72) {
-			dead = true;
-			//newGame();
-			menuActive = true;
-			pause = false; 
-			//monst.clear();
-			//monstLangd = monst.size();
+void monsterAnimation(int n) {
+	if (monst[n].runL == true) {		// animation till vänster
+		monst[n].cY = 0;
+		monst[n].cX += 24;
+		if (monst[n].cX > 263) {
+			monst[n].cX = 0;
 		}
 	}
+	else if (monst[n].runR == true) {	// animation till höger
+		monst[n].cY = 24;
+		monst[n].cX += 24;
+		if (monst[n].cX > 263) {
+			monst[n].cX = 0;
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void monsterKill(int n) {
+	// Dödar spelaren med tennis racket och majonäs.
+	if (monst[n].x > playerX - 36 && monst[n].x < playerX + 72) {
+		newGame();		// öppnar menyn och startar ett nytt spel
+		menuActive = true;
+		pause = false; 
+	}
+
 }
 //---------------------------------------------------------------------------
 void collision() {
@@ -402,27 +370,27 @@ void collision() {
 }
 //---------------------------------------------------------------------------
 void score() {
-	points++; 
+	points++;		// poäng
 }
 //---------------------------------------------------------------------------
 void makeExplosion(LPARAM lParam) {
 	booms tmp;
-	x = LOWORD(lParam) - (tmp.width / 2);
+	x = LOWORD(lParam) - (tmp.width / 2);	// hämtar position av musen när man klickar, och centrerar den med explosionens höjd och bredd
 	y = HIWORD(lParam) - (tmp.height / 2);
 	tmp.x = x;
-	tmp.y = y;
-	exps.push_back(tmp);
+	tmp.y = y;		
+	exps.push_back(tmp);		// lägger in en ny explosion och beräknar om längden av vektorn
 	expLangd = exps.size();
 }
 //---------------------------------------------------------------------------
 void runLeft(int langd) {
 	runL = true;
-	idleL = true;
+	idleL = true;			// ändrar så att run och idle Left blir true, så när spelaren slutar springa så spelas rätt idle animation
 	runR = false;
 	idleR = false;
-	for (int n = 0; n < langd; n++) {
+	for (int n = 0; n < langd; n++) {	// går igenom alla backgrunder och förflyatr de med 1 pixel * deras multiplier
 		bgs[n].x += (1 * bgs[n].m);
-		if (bgs[n].x > 1920 / 2) {
+		if (bgs[n].x > 1920 / 2) {		// om man går runt reseta den bakgrundens x position
 			bgs[n].x = 0;
 		}
 	}
@@ -430,18 +398,19 @@ void runLeft(int langd) {
 //---------------------------------------------------------------------------
 void runRight(int langd) {
 	runL = false;
-	idleL = false;
+	idleL = false;			// ändrar så att run och idle Right blir true, så när spelaren slutar springa så spelas rätt idle animation
 	runR = true;
 	idleR = true;
-	for (int n = 0; n < langd; n++) {
+	for (int n = 0; n < langd; n++) {	// går igenom alla backgrunder och förflyatr de med 1 pixel * deras multiplier
 		bgs[n].x -= (1 * bgs[n].m);
-		if (bgs[n].x < -1920 / 2) {
+		if (bgs[n].x < -1920 / 2) {		// om man går runt reseta den bakgrundens x position
 			bgs[n].x = 0;
 		}
 	}
 }
 //---------------------------------------------------------------------------
 void playerAnimation() {
+	// springer eller står till höger
 	if (runR == true) {
 		ypic = 288;
 		xpic -= 144;
@@ -459,7 +428,7 @@ void playerAnimation() {
 			xpic = 144;
 		}
 	}
-	// springer eller st�r till v�nster
+	// springer eller står till v�nster
 	if (runL == true) {
 		ypic = 288;
 		xpic += 144;
@@ -482,12 +451,12 @@ void playerAnimation() {
 void update() {
 	static int counter = 0;
 	counter++;
-	//	int langd = exps.size() - 1;
 	if (counter % 7 == 0) {
 		// monster animation
 		for (int n = 0; n < monstLangd; n++) {
-			controllMonster();
-			monsterKill();
+			controllMonster(n);
+			monsterAnimation(n);
+			monsterKill(n);
 		}
 		// background animation
 		bgs[6].x -= 1;
@@ -495,7 +464,6 @@ void update() {
 			bgs[6].x = 0;
 		}
 		// player animation
-		// springer eller st�r till h�ger
 		playerAnimation();
 	}
 	// explosion animation
@@ -509,20 +477,32 @@ void update() {
 			if (exps[n].cY > 1000) {
 				exps[n].cX = 0;
 				exps[n].cY = 0;
-				exps.erase(exps.begin());
+				exps.erase(exps.begin());	// tar bort den explosionen ur vectorn när den är slut
 				expLangd = exps.size();
 			}
 		}
 	}
 }
 //---------------------------------------------------------------------------
-void printMenu(bool pause, int a) {
+void printMenu() {
+	SetBkMode(bufferHDC, TRANSPARENT);	// så att texten har en transparent backgrund
+	int langd = bgs.size() - 1;
+	static bool first = true;
+
+	if (first == true) {				// kör endast en gång när man startar spelet
+		for (int n = langd; n >= 0; n--) {
+			// background
+			TransparentBlt(bufferHDC, bgs[n].x, 0, app_Wid, app_Hei, bgs[n].hDCbg, 0, 0, bg_Wid, bg_Hei, COLORREF(RGB(255, 0, 255)));
+		}	
+		first = false;
+	}
+
 	RECT rect;
-	SelectObject(bufferHDC, myFonts[0]);
 	GetClientRect(hWnd, &rect);
-	int antal; 
+	int antal;												// alla strings för texterna
 	std::string pauseText[4] = { "RESUME", "NEW GAME", "INSTRUCTIONS", "EXIT" };
 	std::string text[3] = { "NEW GAME", "INSTRUCTIONS", "EXIT" };
+	std::string header = "HERO VS MONSTERS";
 	std::string menu;
 	if (pause == true) {
 		antal = 4;
@@ -530,6 +510,11 @@ void printMenu(bool pause, int a) {
 	else {
 		antal = 3;
 	}
+	SelectObject(bufferHDC, myFonts[1]);					// rubriken
+	SetTextColor(bufferHDC, COLORREF(RGB(0, 0, 0)));
+	TextOut(bufferHDC, 300, 50, header.c_str(), header.size());
+
+	SelectObject(bufferHDC, myFonts[0]);					// menyvalen
 	for (int n = 0; n < antal; n++) {
 		if (pause == true) {
 			menu = pauseText[n];
@@ -538,26 +523,24 @@ void printMenu(bool pause, int a) {
 			menu = text[n];
 		}
 		
-		rect.top = 50 + (n * 40);
-		if (n == a) {
+		rect.top = 150 + (n * 40);
+		if (n == a) {										// markerar valet man är över
 			SetTextColor(bufferHDC, COLORREF(RGB(200, 45, 45)));
 		}
 		else {
 			SetTextColor(bufferHDC, COLORREF(RGB(0, 0, 0)));
 		}
-
+															// skriver ut allt till buffern
 		TextOut(bufferHDC, 50, rect.top, menu.c_str(), menu.size());
 	}
+
 }
 //---------------------------------------------------------------------
 void render() {
 	static bool yes = true;
 	int langd = bgs.size() - 1;
 	if (menuActive == true){	// om menyn är igång kör endast menyn
-		printMenu(pause, a);
-		//std::string output = "Y: " + std::to_string(y) + " " + "a: " + std::to_string(a);
-		//if (pause == true) output += " and Pause ";
-		//TextOut(bufferHDC, 0, 20, output.c_str(), output.length());
+		printMenu();
 		BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 		return;
 	}
@@ -580,20 +563,21 @@ void render() {
 				TransparentBlt(bufferHDC, playerX, playerY, 144, 144, playerHDC[1], xpic, ypic, 144, 144, COLORREF(RGB(255, 0, 255)));
 			}
 		}
-		// monster
-		for (int n = 0; n < monstLangd; n++) {
-			TransparentBlt(bufferHDC, monst[n].x, monst[n].y, monst[n].width, monst[n].height, monsterHDC, monst[n].cX, monst[n].cY, 24, 24, COLORREF(RGB(255, 0, 255)));
-		}
-		// explosions
-		for (int n = 0; n < expLangd; n++) {
-			TransparentBlt(bufferHDC, exps[n].x, exps[n].y, exps[n].width, exps[n].height, expHDC, exps[n].cX, exps[n].cY, 320, 240, COLORREF(RGB(255, 0, 255)));
-		}
+	}
+	// monster
+	for (int n = 0; n < monstLangd; n++) {
+		TransparentBlt(bufferHDC, monst[n].x, monst[n].y, monst[n].width, monst[n].height, monsterHDC, monst[n].cX, monst[n].cY, 24, 24, COLORREF(RGB(255, 0, 255)));
+	}
+	// explosions
+	for (int n = 0; n < expLangd; n++) {
+		TransparentBlt(bufferHDC, exps[n].x, exps[n].y, exps[n].width, exps[n].height, expHDC, exps[n].cX, exps[n].cY, 320, 240, COLORREF(RGB(255, 0, 255)));
 	}
 
+	// visar poängen för spelaren
 	std::string output = "Score: " + std::to_string(points) + " ";
 
-	TextOut(bufferHDC, 0, 20, output.c_str(), output.length());
-	//dubbelbuff
+	TextOut(bufferHDC, 50, 20, output.c_str(), output.length());
+	//dubbelbuff av allt
 	BitBlt(hDC, 0, 0, innerWidth, innerHeight, bufferHDC, 0, 0, SRCCOPY);
 }
 //---------------------------------------------------------------------------
@@ -608,14 +592,11 @@ int	initalizeAll(HWND hWnd) {
 
 	hDC = GetDC(hWnd);			// Koppla f�nstret till en DC
 
-	// skapar pennor och fonter
-	myPens[0] = CreatePen(PS_SOLID, 5, RGB(4, 118, 208));
-	myPens[1] = CreatePen(PS_SOLID, 4, RGB(255, 0, 0));
-	myPens[2] = CreatePen(PS_SOLID, 4, RGB(40, 230, 125));
-	orginalPen = (HPEN)SelectObject(hDC, myPens[0]);
-	myFonts[0] = CreateFontA(28, 0, 100, 0, FW_DONTCARE, FALSE, TRUE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+	// skapar fonter
+	myFonts[0] = CreateFontA(28, 0, 100, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
 		CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Impact"));
-
+	myFonts[1] = CreateFontA(60, 0, 100, 0, FW_DONTCARE, FALSE, TRUE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+		CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Impact"));
 
 	// kopplar resten av HDC
 	bg tmp;
@@ -671,11 +652,7 @@ void releaseAll(HWND hWnd) {
 		ReleaseDC(hWnd, playerHDC[n]);
 		DeleteDC(playerHDC[n]);
 	}
-	// tar bort pennor 
-	SelectObject(hDC, orginalPen);
-	for (int i = 0; i < 10; i++) {
-		DeleteObject(myPens[i]);
-	}
+	
 	// tar bort dc och bitmap för explosioner
 	SelectObject(expHDC, oldBitmap[10]);
 	DeleteObject(explosion);
@@ -694,7 +671,6 @@ void releaseAll(HWND hWnd) {
 }
 //---------------------------------------------------------------------------
 BOOL initInstance(HINSTANCE hInstance, int nCmdShow) {
-	//Bredd och h�jd f�r f�nstret som vi skapar
 
 	HWND hWnd = CreateWindowEx(
 		0, ClsName, (LPCSTR)ClsName, WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_BORDER,
